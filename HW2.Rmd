@@ -1,0 +1,39 @@
+---
+title: "HW2"
+author: "Xingjian Yan"
+date: "2/11/2021"
+output: github_document
+---
+
+####1.How many flights have a missing dep_time? What other variables are missing? What might these rows represent?
+```{r, include=FALSE}
+library(dplyr)
+library(nycflights13)
+library(ggplot2)
+library(lubridate)
+```
+
+```{r}
+flights %>% summarize(missing_delay = mean(is.na(dep_time)))
+```
+*About 2.45% dep_time were missing, other variables, such as dep_delay, arr_time, arr_delay, air_time, are also missing. These rows might represent flights that were canceled.*
+
+
+####2.Currently dep_time and sched_dep_time are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.
+```{r}
+flights %>% select(dep_time, sched_dep_time, hour, minute) %>%  mutate(
+  dep_hour = dep_time %/% 100,
+  dep_minute = dep_time %% 100,
+  dep_total_minutes = 60*dep_hour + dep_minute,
+  sched_dep_total_minutes = 60*hour + minute) %>% select(dep_time, sched_dep_time,dep_total_minutes, sched_dep_total_minutes)
+```
+
+####3.Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay? Use multiple dyplr operations, all on one line, concluding with ggplot(aes(x= ,y=)) + geom_point()
+
+```{r}
+flights %>% mutate(day_of_year = yday(time_hour)) %>% group_by(day_of_year) %>% summarize(missing_delay = mean(is.na(dep_time)), delay = mean(dep_delay, na.rm = T)) %>% ggplot(aes(y=missing_delay,x= delay ))+geom_point() + ggtitle("The proportion of cancelled flights vs the average delay time") + ylab("cancelled flights as a percentage") + xlab("average delay time")
+
+
+
+```
+
